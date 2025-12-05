@@ -16,6 +16,7 @@ export type TestRecord = {
   functional: string;
   relatedTask: string;
   layer: string;
+  date: string;
 };
 
 export type Project = {
@@ -114,7 +115,8 @@ export async function createTest(
   description: string,
   functional: string,
   relatedTask: string,
-  layer: string
+  layer: string,
+  date: string
 ) {
   const db = await getDB();
   const project = db.projects.find((p) => p.id === projectId);
@@ -129,6 +131,7 @@ export async function createTest(
     functional,
     relatedTask,
     layer,
+    date,
     createdAt: new Date().toISOString(),
   };
 

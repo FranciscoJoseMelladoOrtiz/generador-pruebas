@@ -47,6 +47,7 @@ export default function TestForm({ projectId, testId }: Props) {
   const [functional, setFunctional] = useState("");
   const [relatedTask, setRelatedTask] = useState("");
   const [layer, setLayer] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [descriptionHtml, setDescriptionHtml] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -80,6 +81,7 @@ export default function TestForm({ projectId, testId }: Props) {
           setFunctional(t.functional || "");
           setRelatedTask(t.relatedTask || "");
           setLayer(t.layer || "");
+          setDate(t.date || new Date().toISOString().split("T")[0]);
           setDescriptionHtml(t.description);
 
           // Reconstruct data state
@@ -164,6 +166,7 @@ export default function TestForm({ projectId, testId }: Props) {
         functional,
         relatedTask,
         layer,
+        date,
         description: descriptionHtml,
         data: finalData,
       });
@@ -176,7 +179,8 @@ export default function TestForm({ projectId, testId }: Props) {
         descriptionHtml,
         functional,
         relatedTask,
-        layer
+        layer,
+        date
       );
     }
 
@@ -241,9 +245,11 @@ export default function TestForm({ projectId, testId }: Props) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Entorno</Label>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="space-y-2 print:flex print:items-center print:space-y-0 print:gap-2">
+                  <Label className="print:whitespace-nowrap print:font-bold">
+                    Entorno:
+                  </Label>
                   <Select
                     onValueChange={setEnvironment}
                     value={environment}
@@ -261,30 +267,56 @@ export default function TestForm({ projectId, testId }: Props) {
                     </SelectContent>
                   </Select>
                   {/* Print view for env */}
-                  <div className="hidden print:block font-mono mb-2">
-                    Environment: {environment}
+                  <div className="hidden print:block font-mono print:text-base">
+                    {environment}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="layer">Capa</Label>
+                <div className="space-y-2 print:flex print:items-center print:space-y-0 print:gap-2">
+                  <Label
+                    htmlFor="layer"
+                    className="print:whitespace-nowrap print:font-bold"
+                  >
+                    Capa:
+                  </Label>
                   <Input
                     id="layer"
                     placeholder="front, mw, host..."
                     value={layer}
                     onChange={(e) => setLayer(e.target.value)}
-                    className="print:border-0 print:px-0"
+                    className="print:border-0 print:shadow-none print:bg-transparent print:px-0 print:h-auto print:text-base"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="functional">Funcional</Label>
+                <div className="space-y-2 print:flex print:items-center print:space-y-0 print:gap-2">
+                  <Label
+                    htmlFor="date"
+                    className="print:whitespace-nowrap print:font-bold"
+                  >
+                    Fecha:
+                  </Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="print:border-0 print:shadow-none print:bg-transparent print:px-0 print:h-auto print:text-base"
+                  />
+                </div>
+
+                <div className="space-y-2 print:flex print:items-center print:space-y-0 print:gap-2">
+                  <Label
+                    htmlFor="functional"
+                    className="print:whitespace-nowrap print:font-bold"
+                  >
+                    Funcional:
+                  </Label>
                   <Input
                     id="functional"
                     placeholder="Tester Name"
                     value={functional}
                     onChange={(e) => setFunctional(e.target.value)}
-                    className="print:border-0 print:px-0"
+                    className="print:border-0 print:shadow-none print:bg-transparent print:px-0 print:h-auto print:text-base"
                   />
                 </div>
               </div>

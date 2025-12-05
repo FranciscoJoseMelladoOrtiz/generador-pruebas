@@ -1,40 +1,44 @@
 {
   "projects": [
     {
-      "id": "2dc78710-6f76-48ae-82aa-6000f41fcc2c",
+      "id": "3e8422a0-f1ad-4ac8-84e4-d38367b5a00e",
       "name": "Cuentas Vista",
       "environments": [
-        "develop",
-        "test",
+        "Develop",
+        "Test",
         "UAT"
       ],
       "data": {
-        "develop": {
-          "contrato": "12346",
-          "idLote": "6014",
-          "idPropuesta": "4517"
+        "Develop": {
+          "idLote": "9014",
+          "idPropuesta": "9715"
         },
-        "test": {},
+        "Test": {
+          "idLote": "9014",
+          "idPropuesta": "9715"
+        },
         "UAT": {}
       },
       "tests": [
         {
-          "id": "93b91ccd-c7c2-4d70-88e4-d87f6d31193f",
-          "name": "Pruebas CV tarea 29121",
-          "environment": "develop",
+          "id": "528de3a0-45ed-40f2-9739-2748de3d87c6",
+          "name": "Prueba - PGD6458-4162 - Desactivar con nivel de atribución",
+          "environment": "Develop",
           "data": {
-            "idPropuesta": "4517",
-            "idLote": "6014",
-            "contrato": "1278"
+            "idLote": "9014",
+            "idPropuesta": "9715",
+            "producto": "60116",
+            "contrato": "01001000010110207152"
           },
-          "description": "<p>Este es el contenido<br></p><p></p>",
+          "description": "<p>Hemos cogido la primera tarifa bonificada del concepto Interés descubierto para el producto 60116 del contrato 01001000010110207152, las pruebas deben poder demostrar:&nbsp;</p><ul><li><p>Que para un valor superior al nivel de atribución aparezca un error controlado.&nbsp;</p></li></ul><ul><li><p>Que para un valor que esté dentro de los niveles de atribución se pueda realizar la validación.&nbsp;</p></li></ul><p>&nbsp;</p><p>Proceso:&nbsp;</p><p>Desde el entorno de dev, con el centro 1, se comienza una nueva contratación, se configuran los datos básicos indicando disponibilidad individual, se selecciona el producto 60116 y se procede a editar las condiciones económicas. Se realizan dos modificaciones del mismo concepto: la primera supera los niveles de atribución, la segunda no. En el segundo caso la validación es correcta.&nbsp;</p><p></p><p></p><p>&nbsp;</p><p></p><p></p><p></p><p></p>",
           "functional": "Borja Muñoz",
-          "relatedTask": "https://github.com/borjamrd-atm/generador-pruebas",
-          "createdAt": "2025-12-05T10:42:01.373Z",
-          "layer": "HOST"
+          "relatedTask": "https://jira.bancamarch.es/browse/PGD6458-4162",
+          "layer": "FRONT",
+          "date": "2025-12-05",
+          "createdAt": "2025-12-05T12:07:51.808Z"
         }
       ],
-      "createdAt": "2025-12-05T10:24:01.377Z"
+      "createdAt": "2025-12-05T11:58:37.336Z"
     }
   ]
 }
