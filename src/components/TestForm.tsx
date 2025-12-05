@@ -46,6 +46,7 @@ export default function TestForm({ projectId, testId }: Props) {
   const [environment, setEnvironment] = useState("");
   const [functional, setFunctional] = useState("");
   const [relatedTask, setRelatedTask] = useState("");
+  const [layer, setLayer] = useState("");
   const [descriptionHtml, setDescriptionHtml] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -78,6 +79,7 @@ export default function TestForm({ projectId, testId }: Props) {
           setEnvironment(t.environment);
           setFunctional(t.functional || "");
           setRelatedTask(t.relatedTask || "");
+          setLayer(t.layer || "");
           setDescriptionHtml(t.description);
 
           // Reconstruct data state
@@ -161,6 +163,7 @@ export default function TestForm({ projectId, testId }: Props) {
         environment,
         functional,
         relatedTask,
+        layer,
         description: descriptionHtml,
         data: finalData,
       });
@@ -172,7 +175,8 @@ export default function TestForm({ projectId, testId }: Props) {
         finalData,
         descriptionHtml,
         functional,
-        relatedTask
+        relatedTask,
+        layer
       );
     }
 
@@ -234,14 +238,13 @@ export default function TestForm({ projectId, testId }: Props) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Environment</Label>
                   <Select
                     onValueChange={setEnvironment}
                     value={environment}
                     required
-                    disabled={!!testId}
                   >
                     <SelectTrigger className="print:hidden">
                       <SelectValue placeholder="Select Environment" />
@@ -258,6 +261,17 @@ export default function TestForm({ projectId, testId }: Props) {
                   <div className="hidden print:block font-mono mb-2">
                     Environment: {environment}
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="layer">Capa</Label>
+                  <Input
+                    id="layer"
+                    placeholder="front, mw, host..."
+                    value={layer}
+                    onChange={(e) => setLayer(e.target.value)}
+                    className="print:border-0 print:px-0"
+                  />
                 </div>
 
                 <div className="space-y-2">
