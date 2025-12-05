@@ -1,0 +1,24 @@
+{
+  "projects": [
+    {
+      "id": "2dc78710-6f76-48ae-82aa-6000f41fcc2c",
+      "name": "Cuentas Vista",
+      "environments": [
+        "develop",
+        "test",
+        "UAT"
+      ],
+      "data": {
+        "develop": {
+          "contrato": "12346",
+          "idLote": "6014",
+          "idPropuesta": "4517"
+        },
+        "test": {},
+        "UAT": {}
+      },
+      "tests": [],
+      "createdAt": "2025-12-05T10:24:01.377Z"
+    }
+  ]
+}
