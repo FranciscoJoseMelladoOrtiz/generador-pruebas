@@ -1,21 +1,19 @@
-import { getProject, addEnvironment, saveDataset } from "@/lib/storage";
-import { notFound } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TestCard from "@/components/TestCard";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import Link from "next/link";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { addEnvironment, getProject, saveDataset } from "@/lib/storage";
 import { revalidatePath } from "next/cache";
-import TestCard from "@/components/TestCard";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 // Next.js 15 params type
 type Props = {
@@ -61,28 +59,29 @@ export default async function ProjectPage({ params }: Props) {
           href="/"
           className="text-muted-foreground hover:text-white mb-2 inline-block"
         >
-          &larr; Back to Projects
+          &larr; Volver a Proyectos
         </Link>
         <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
           {project.name}
         </h1>
         <p className="text-muted-foreground">
-          Manage environments, data configuration, and view test records.
+          Gestiona los entornos, la configuración de datos y las listas de
+          pruebas.
         </p>
       </div>
 
       <Tabs defaultValue="tests" className="w-full space-y-6">
         <TabsList className="bg-muted/20 p-1 border border-white/10">
-          <TabsTrigger value="tests">Tests Records</TabsTrigger>
-          <TabsTrigger value="environments">Environments</TabsTrigger>
-          <TabsTrigger value="data">Data Configuration</TabsTrigger>
+          <TabsTrigger value="tests">Lista de pruebas</TabsTrigger>
+          <TabsTrigger value="environments">Entornos</TabsTrigger>
+          <TabsTrigger value="data">Configuración de datos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tests" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Test Records</h2>
+            <h2 className="text-2xl font-bold">Lista de pruebas</h2>
             <Button asChild className="bg-primary hover:bg-primary/80">
-              <Link href={`/projects/${id}/new-test`}>+ New Test</Link>
+              <Link href={`/projects/${id}/new-test`}>+ Nueva prueba</Link>
             </Button>
           </div>
 
@@ -90,8 +89,8 @@ export default async function ProjectPage({ params }: Props) {
             {project.tests.length === 0 && (
               <Card className="bg-muted/5 border-dashed">
                 <CardContent className="flex flex-col items-center justify-center p-10 text-muted-foreground">
-                  <p>No tests recorded yet.</p>
-                  <p>Click "New Test" to start documenting.</p>
+                  <p>No hay pruebas creadas.</p>
+                  <p>Click "Nueva prueba" para crear una.</p>
                 </CardContent>
               </Card>
             )}
@@ -104,9 +103,9 @@ export default async function ProjectPage({ params }: Props) {
         <TabsContent value="environments" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Environments</CardTitle>
+              <CardTitle>Entornos</CardTitle>
               <CardDescription>
-                Define environments where tests are executed (e.g. Dev, QA,
+                Define entornos donde se ejecutan las pruebas (e.g. Dev, QA,
                 UAT).
               </CardDescription>
             </CardHeader>
@@ -122,7 +121,7 @@ export default async function ProjectPage({ params }: Props) {
                 ))}
                 {project.environments.length === 0 && (
                   <span className="text-muted-foreground italic">
-                    No environments defined
+                    No entornos definidos
                   </span>
                 )}
               </div>
@@ -132,7 +131,7 @@ export default async function ProjectPage({ params }: Props) {
                 className="flex gap-4 items-end max-w-sm"
               >
                 <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="envName">New Environment</Label>
+                  <Label htmlFor="envName">Nuevo entorno</Label>
                   <Input
                     type="text"
                     id="envName"
@@ -142,7 +141,7 @@ export default async function ProjectPage({ params }: Props) {
                   />
                 </div>
                 <Button type="submit" variant="secondary">
-                  Add
+                  Añadir
                 </Button>
               </form>
             </CardContent>
@@ -152,9 +151,9 @@ export default async function ProjectPage({ params }: Props) {
         <TabsContent value="data" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Data Configuration</CardTitle>
+              <CardTitle>Configuración de datos</CardTitle>
               <CardDescription>
-                Manage key-value datasets for each environment.
+                Configura datos para cada entorno
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -174,7 +173,7 @@ export default async function ProjectPage({ params }: Props) {
                       {/* List existing keys */}
                       <div className="space-y-2">
                         <Label className="text-xs uppercase text-muted-foreground font-semibold">
-                          Current Data
+                          Datos actuales
                         </Label>
                         {Object.entries(project.data[env] || {}).map(
                           ([k, v]) => (
@@ -191,7 +190,7 @@ export default async function ProjectPage({ params }: Props) {
                         )}
                         {Object.keys(project.data[env] || {}).length === 0 && (
                           <p className="text-sm text-muted-foreground italic">
-                            No data configured.
+                            No datos configurados.
                           </p>
                         )}
                       </div>
@@ -199,7 +198,7 @@ export default async function ProjectPage({ params }: Props) {
                       {/* Add new key form */}
                       <div className="space-y-2 border-l pl-4 border-border/50">
                         <Label className="text-xs uppercase text-muted-foreground font-semibold">
-                          Add / Update Key
+                          Añadir / Actualizar clave
                         </Label>
                         <form action={handleSaveData} className="space-y-3">
                           <input type="hidden" name="envName" value={env} />
@@ -221,7 +220,7 @@ export default async function ProjectPage({ params }: Props) {
                             variant="outline"
                             className="w-full"
                           >
-                            Save Key
+                            Guardar clave
                           </Button>
                         </form>
                       </div>

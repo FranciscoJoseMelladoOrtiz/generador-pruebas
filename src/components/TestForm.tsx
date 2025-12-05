@@ -198,7 +198,7 @@ export default function TestForm({ projectId, testId }: Props) {
           variant="outline"
           onClick={() => router.push(`/projects/${projectId}`)}
         >
-          &larr; Back
+          &larr; Volver
         </Button>
         {testId && (
           <Button
@@ -213,23 +213,26 @@ export default function TestForm({ projectId, testId }: Props) {
       <div ref={printRef} className="print:p-8">
         <Card className="print:border-0 print:shadow-none">
           <CardHeader className="print:hidden">
-            <CardTitle>
-              {testId ? "Edit Test Record" : "Record New Test"}
-            </CardTitle>
+            <CardTitle>{testId ? "Editar Prueba" : "Nueva Prueba"}</CardTitle>
             <CardDescription>
               {testId
-                ? `Viewing record: ${test?.id}`
-                : `Documenting for ${project.name}`}
+                ? `Editando Prueba: ${test?.id}`
+                : `Documentando para ${project.name}`}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="testName">Test Name</Label>
-                <div className="relative">
+              <div className="space-y-2 print:flex print:items-center print:space-y-0 print:gap-2">
+                <Label
+                  htmlFor="testName"
+                  className="print:whitespace-nowrap print:font-bold print:text-base"
+                >
+                  Nombre de prueba:
+                </Label>
+                <div className="relative print:flex-1">
                   <input
                     id="testName"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 print:border-0 print:px-0 print:font-bold print:text-xl"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 print:border-0 print:shadow-none print:px-0 print:h-auto print:text-base print:bg-transparent"
                     placeholder="e.g. User Login Validation"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -240,14 +243,14 @@ export default function TestForm({ projectId, testId }: Props) {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Environment</Label>
+                  <Label>Entorno</Label>
                   <Select
                     onValueChange={setEnvironment}
                     value={environment}
                     required
                   >
                     <SelectTrigger className="print:hidden">
-                      <SelectValue placeholder="Select Environment" />
+                      <SelectValue placeholder="Selecciona entorno" />
                     </SelectTrigger>
                     <SelectContent>
                       {project.environments.map((env) => (
@@ -290,7 +293,7 @@ export default function TestForm({ projectId, testId }: Props) {
                 <Label htmlFor="relatedTask">Tarea Relacionada</Label>
                 <Input
                   id="relatedTask"
-                  placeholder="Task ID or Link"
+                  placeholder="Tarea relacionada"
                   value={relatedTask}
                   onChange={(e) => setRelatedTask(e.target.value)}
                   className="print:border-0 print:px-0"
@@ -299,23 +302,25 @@ export default function TestForm({ projectId, testId }: Props) {
 
               {environment && (
                 <div className="border rounded-md p-4 space-y-4">
-                  <Label>Data Configuration</Label>
+                  <Label>Configuración de datos</Label>
 
                   {/* Environment Data Selection */}
                   <div className="space-y-2">
                     <h4 className="text-xs uppercase text-muted-foreground font-bold">
-                      Environment Data ({environment})
+                      Datos ({environment})
                     </h4>
                     {Object.keys(availableData).length === 0 && (
                       <p className="text-sm text-muted-foreground italic">
-                        No data configured for this environment.
+                        No hay datos configurados para este entorno.
                       </p>
                     )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {Object.entries(availableData).map(([key, value]) => (
                         <div
                           key={key}
-                          className="flex items-center space-x-2 border p-2 rounded hover:bg-muted/50"
+                          className={`${
+                            selectedKeys.has(key) ? "checked" : "print:hidden"
+                          } flex items-center space-x-2 p-1 hover:bg-muted/50`}
                         >
                           <Checkbox
                             id={`env-key-${key}`}
@@ -334,9 +339,6 @@ export default function TestForm({ projectId, testId }: Props) {
                               {value}
                             </span>
                           </div>
-                          <div className="hidden print:block print:text-xs">
-                            [{selectedKeys.has(key) ? "x" : " "}] {key}: {value}
-                          </div>
                         </div>
                       ))}
                     </div>
@@ -346,7 +348,7 @@ export default function TestForm({ projectId, testId }: Props) {
                   <div className="space-y-2 pt-4 border-t">
                     <div className="flex justify-between items-center">
                       <h4 className="text-xs uppercase text-muted-foreground font-bold">
-                        Custom Key-Value Pairs
+                        Campos personalizados
                       </h4>
                       <Button
                         type="button"
@@ -362,7 +364,7 @@ export default function TestForm({ projectId, testId }: Props) {
                     {customData.map((row, idx) => (
                       <div key={idx} className="flex gap-2 items-center">
                         <Input
-                          placeholder="Key"
+                          placeholder="Campo"
                           value={row.key}
                           onChange={(e) =>
                             updateCustomRow(idx, "key", e.target.value)
@@ -370,7 +372,7 @@ export default function TestForm({ projectId, testId }: Props) {
                           className="h-8 text-xs font-mono"
                         />
                         <Input
-                          placeholder="Value"
+                          placeholder="Valor"
                           value={row.value}
                           onChange={(e) =>
                             updateCustomRow(idx, "value", e.target.value)
@@ -393,7 +395,7 @@ export default function TestForm({ projectId, testId }: Props) {
                     ))}
                     {customData.length === 0 && (
                       <p className="text-sm text-muted-foreground italic print:hidden">
-                        No custom keys added.
+                        No campos personalizados agregados.
                       </p>
                     )}
                   </div>
@@ -401,11 +403,17 @@ export default function TestForm({ projectId, testId }: Props) {
               )}
 
               <div className="space-y-2">
-                <Label>Test Description & Evidence</Label>
-                <TiptapEditor
-                  content={descriptionHtml}
-                  onChange={setDescriptionHtml}
-                  placeholder="Describe the test steps, expected results, and paste any evidence..."
+                <Label>Descripción y evidencias</Label>
+                <div className="print:hidden">
+                  <TiptapEditor
+                    content={descriptionHtml}
+                    onChange={setDescriptionHtml}
+                    placeholder="Describe the test steps, expected results, and paste any evidence..."
+                  />
+                </div>
+                <div
+                  className="hidden print:block prose prose-sm max-w-none dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: descriptionHtml }}
                 />
               </div>
 
@@ -414,7 +422,7 @@ export default function TestForm({ projectId, testId }: Props) {
                   type="submit"
                   disabled={isSubmitting || !environment || !name}
                 >
-                  {isSubmitting ? "Saving..." : "Save Record"}
+                  {isSubmitting ? "Guardando..." : "Guardar prueba"}
                 </Button>
               </div>
             </form>
