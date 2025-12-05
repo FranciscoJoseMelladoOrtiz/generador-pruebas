@@ -208,7 +208,7 @@ export default function TestForm({ projectId, testId }: Props) {
 
       <div ref={printRef} className="print:p-8">
         <Card className="print:border-0 print:shadow-none">
-          <CardHeader>
+          <CardHeader className="print:hidden">
             <CardTitle>
               {testId ? "Edit Test Record" : "Record New Test"}
             </CardTitle>
