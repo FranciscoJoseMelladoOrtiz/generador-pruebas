@@ -8,7 +8,7 @@ import {
 import { TestRecord, db } from "@/lib/db";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -22,11 +22,24 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useReactToPrint } from "react-to-print";
+import { useRef } from "react";
+import { TestPrintTemplate } from "./TestPrintTemplate";
+import { useLiveQuery } from "dexie-react-hooks";
 
 export default function TestCard({ test }: { test: TestRecord }) {
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
+
+  // Fetch project for the print template name
+  const project = useLiveQuery(() => db.projects.get(projectId));
+
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `${test.name}-Report`,
+  });
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -72,6 +85,14 @@ export default function TestCard({ test }: { test: TestRecord }) {
     }
   };
 
+  const onPrintClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (handlePrint) {
+      handlePrint();
+    }
+  };
+
   return (
     <div className="relative group">
       <Link href={`/projects/${projectId}/test/${test.id}`} className="block">
@@ -93,7 +114,18 @@ export default function TestCard({ test }: { test: TestRecord }) {
         </Card>
       </Link>
 
-      <div className="absolute bottom-4 left-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 w-full">
+      <div className="absolute bottom-4 left-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 w-full pr-8">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onPrintClick}
+          className="h-8 text-xs"
+          title="Export PDF"
+        >
+          <Printer className="h-3 w-3 mr-2" />
+          PDF
+        </Button>
+
         <Button
           variant="secondary"
           size="sm"
@@ -101,7 +133,7 @@ export default function TestCard({ test }: { test: TestRecord }) {
           className="h-8 text-xs"
         >
           <Copy className="h-3 w-3 mr-2" />
-          Copia prueba
+          Copia
         </Button>
 
         <AlertDialog>
@@ -135,6 +167,13 @@ export default function TestCard({ test }: { test: TestRecord }) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      </div>
+
+      {/* Hidden print template */}
+      <div className="hidden">
+        <div ref={printRef}>
+          <TestPrintTemplate test={test} projectName={project?.name} />
+        </div>
       </div>
     </div>
   );

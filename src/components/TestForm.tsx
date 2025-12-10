@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import { db, Project, TestRecord } from "@/lib/db";
 import { useReactToPrint } from "react-to-print";
 import { Printer, Plus, Trash2 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { TestPrintTemplate } from "@/components/TestPrintTemplate";
 
 type Props = {
   projectId: string;
@@ -40,7 +41,7 @@ export default function TestForm({ projectId, testId }: Props) {
   const [name, setName] = useState("");
   const [environment, setEnvironment] = useState("");
   const [functional, setFunctional] = useState("");
-  const [relatedTask, setRelatedTask] = useState("");
+  const [relatedTasks, setRelatedTasks] = useState<string[]>([]);
   const [layer, setLayer] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [descriptionHtml, setDescriptionHtml] = useState("");
@@ -54,6 +55,45 @@ export default function TestForm({ projectId, testId }: Props) {
   const [customData, setCustomData] = useState<
     { key: string; value: string }[]
   >([]);
+
+  // Derived state for printing
+  const printTestRecord = useMemo<TestRecord>(() => {
+    // Merge data
+    const finalData: Record<string, string> = {};
+    selectedKeys.forEach((k) => {
+      finalData[k] = availableData[k];
+    });
+    customData.forEach(({ key, value }) => {
+      if (key) finalData[key] = value;
+    });
+
+    return {
+      id: testId || "preview",
+      name: name,
+      environment: environment,
+      data: finalData,
+      description: descriptionHtml,
+      functional: functional,
+      relatedTasks: relatedTasks,
+      relatedTask: relatedTasks[0] || "", // maintain backward compat
+      layer: layer,
+      date: date,
+      createdAt: test?.createdAt || new Date().toISOString(),
+    };
+  }, [
+    testId,
+    name,
+    environment,
+    availableData,
+    selectedKeys,
+    customData,
+    descriptionHtml,
+    functional,
+    relatedTasks,
+    layer,
+    date,
+    test,
+  ]);
 
   // Ref for printing
   const printRef = useRef<HTMLDivElement>(null);
@@ -75,7 +115,9 @@ export default function TestForm({ projectId, testId }: Props) {
           setName(t.name || "");
           setEnvironment(t.environment);
           setFunctional(t.functional || "");
-          setRelatedTask(t.relatedTask || "");
+          setRelatedTasks(
+            t.relatedTasks || (t.relatedTask ? [t.relatedTask] : [])
+          );
           setLayer(t.layer || "");
           setDate(t.date || new Date().toISOString().split("T")[0]);
           setDescriptionHtml(t.description);
@@ -140,53 +182,47 @@ export default function TestForm({ projectId, testId }: Props) {
     setCustomData(customData.filter((_, i) => i !== index));
   };
 
+  const addRelatedTask = () => {
+    setRelatedTasks([...relatedTasks, ""]);
+  };
+
+  const updateRelatedTask = (index: number, value: string) => {
+    const newTasks = [...relatedTasks];
+    newTasks[index] = value;
+    setRelatedTasks(newTasks);
+  };
+
+  const removeRelatedTask = (index: number) => {
+    setRelatedTasks(relatedTasks.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!project || !environment || !name) return;
 
     setIsSubmitting(true);
 
-    // Merge data
-    const finalData: Record<string, string> = {};
-    selectedKeys.forEach((k) => {
-      finalData[k] = availableData[k];
-    });
-    customData.forEach(({ key, value }) => {
-      if (key) finalData[key] = value;
-    });
-
     try {
       await db.projects
         .where("id")
         .equals(projectId)
         .modify((p) => {
+          // Use the derived object logic if possible, or just rebuild it to be safe/explicit for DB
+          // Re-using printTestRecord logic here essentially
           if (testId) {
             const idx = p.tests.findIndex((t) => t.id === testId);
             if (idx !== -1) {
               p.tests[idx] = {
-                ...p.tests[idx],
-                name,
-                environment,
-                functional,
-                relatedTask,
-                layer,
-                date,
-                description: descriptionHtml,
-                data: finalData,
+                ...p.tests[idx], // keep original props
+                ...printTestRecord, // overwrite with current state
+                id: testId, // ensure ID matches
+                createdAt: p.tests[idx].createdAt, // keep created at
               };
             }
           } else {
             const newTest: TestRecord = {
+              ...printTestRecord,
               id: uuidv4(),
-              name,
-              environment,
-              data: finalData,
-              description: descriptionHtml,
-              functional,
-              relatedTask,
-              layer,
-              date,
-              createdAt: new Date().toISOString(),
             };
             p.tests.unshift(newTest);
           }
@@ -216,19 +252,17 @@ export default function TestForm({ projectId, testId }: Props) {
         >
           &larr; Volver
         </Button>
-        {testId && (
-          <Button
-            onClick={() => handlePrint && handlePrint()}
-            variant="secondary"
-          >
-            <Printer className="w-4 h-4 mr-2" /> Export PDF
-          </Button>
-        )}
+        <Button
+          onClick={() => handlePrint && handlePrint()}
+          variant="secondary"
+        >
+          <Printer className="w-4 h-4 mr-2" /> Export PDF
+        </Button>
       </div>
 
-      <div ref={printRef} className="print:p-8">
-        <Card className="print:border-0 print:shadow-none">
-          <CardHeader className="print:hidden">
+      <div className="">
+        <Card className="">
+          <CardHeader className="">
             <CardTitle>{testId ? "Editar Prueba" : "Nueva Prueba"}</CardTitle>
             <CardDescription>
               {testId
@@ -238,17 +272,11 @@ export default function TestForm({ projectId, testId }: Props) {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2 print:flex print:items-center print:space-y-0 print:gap-2">
-                <Label
-                  htmlFor="testName"
-                  className="print:whitespace-nowrap print:font-bold print:text-base"
-                >
-                  Nombre de prueba:
-                </Label>
-                <div className="relative print:flex-1">
-                  <input
+              <div className="space-y-2">
+                <Label htmlFor="testName">Nombre de prueba:</Label>
+                <div className="relative">
+                  <Input
                     id="testName"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 print:border-0 print:shadow-none print:px-0 print:h-auto print:text-base print:bg-transparent"
                     placeholder="e.g. User Login Validation"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -258,16 +286,14 @@ export default function TestForm({ projectId, testId }: Props) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2 print:flex print:items-center print:space-y-0 print:gap-2">
-                  <Label className="print:whitespace-nowrap print:font-bold">
-                    Entorno:
-                  </Label>
+                <div className="space-y-2">
+                  <Label>Entorno:</Label>
                   <Select
                     onValueChange={setEnvironment}
                     value={environment}
                     required
                   >
-                    <SelectTrigger className="print:hidden">
+                    <SelectTrigger>
                       <SelectValue placeholder="Selecciona entorno" />
                     </SelectTrigger>
                     <SelectContent>
@@ -278,70 +304,75 @@ export default function TestForm({ projectId, testId }: Props) {
                       ))}
                     </SelectContent>
                   </Select>
-                  {/* Print view for env */}
-                  <div className="hidden print:block font-mono print:text-base">
-                    {environment}
-                  </div>
                 </div>
 
-                <div className="space-y-2 print:flex print:items-center print:space-y-0 print:gap-2">
-                  <Label
-                    htmlFor="layer"
-                    className="print:whitespace-nowrap print:font-bold"
-                  >
-                    Capa:
-                  </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="layer">Capa:</Label>
                   <Input
                     id="layer"
                     placeholder="front, mw, host..."
                     value={layer}
                     onChange={(e) => setLayer(e.target.value)}
-                    className="print:border-0 print:shadow-none print:bg-transparent print:px-0 print:h-auto print:text-base"
                   />
                 </div>
 
-                <div className="space-y-2 print:flex print:items-center print:space-y-0 print:gap-2">
-                  <Label
-                    htmlFor="date"
-                    className="print:whitespace-nowrap print:font-bold"
-                  >
-                    Fecha:
-                  </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="date">Fecha:</Label>
                   <Input
                     id="date"
                     type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="print:border-0 print:shadow-none print:bg-transparent print:px-0 print:h-auto print:text-base"
                   />
                 </div>
 
-                <div className="space-y-2 print:flex print:items-center print:space-y-0 print:gap-2">
-                  <Label
-                    htmlFor="functional"
-                    className="print:whitespace-nowrap print:font-bold"
-                  >
-                    Funcional:
-                  </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="functional">Funcional:</Label>
                   <Input
                     id="functional"
                     placeholder="Tester Name"
                     value={functional}
                     onChange={(e) => setFunctional(e.target.value)}
-                    className="print:border-0 print:shadow-none print:bg-transparent print:px-0 print:h-auto print:text-base"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="relatedTask">Tarea Relacionada</Label>
-                <Input
-                  id="relatedTask"
-                  placeholder="Tarea relacionada"
-                  value={relatedTask}
-                  onChange={(e) => setRelatedTask(e.target.value)}
-                  className="print:border-0 print:px-0"
-                />
+                <div className="flex justify-between items-center">
+                  <Label>Tareas Relacionadas</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addRelatedTask}
+                    className="h-7 w-7 p-0 rounded-full"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                {relatedTasks.map((task, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <Input
+                      placeholder="Tarea relacionada"
+                      value={task}
+                      onChange={(e) => updateRelatedTask(index, e.target.value)}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeRelatedTask(index)}
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                {relatedTasks.length === 0 && (
+                  <p className="text-sm text-muted-foreground italic">
+                    No hay tareas relacionadas.
+                  </p>
+                )}
               </div>
 
               {environment && (
@@ -363,14 +394,13 @@ export default function TestForm({ projectId, testId }: Props) {
                         <div
                           key={key}
                           className={`${
-                            selectedKeys.has(key) ? "checked" : "print:hidden"
+                            selectedKeys.has(key) ? "checked" : ""
                           } flex items-center space-x-2 p-1 hover:bg-muted/50`}
                         >
                           <Checkbox
                             id={`env-key-${key}`}
                             checked={selectedKeys.has(key)}
                             onCheckedChange={() => toggleKey(key)}
-                            className="print:hidden"
                           />
                           <div className="grid gap-0.5 leading-none">
                             <Label
@@ -399,7 +429,7 @@ export default function TestForm({ projectId, testId }: Props) {
                         variant="outline"
                         size="sm"
                         onClick={addCustomRow}
-                        className="h-7 w-7 p-0 print:hidden rounded-full"
+                        className="h-7 w-7 p-0 rounded-full"
                       >
                         <Plus className="w-4 h-4" />
                       </Button>
@@ -428,17 +458,14 @@ export default function TestForm({ projectId, testId }: Props) {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeCustomRow(idx)}
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive print:hidden"
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
-                        <div className="hidden print:block print:text-xs">
-                          {row.key}: {row.value}
-                        </div>
                       </div>
                     ))}
                     {customData.length === 0 && (
-                      <p className="text-sm text-muted-foreground italic print:hidden">
+                      <p className="text-sm text-muted-foreground italic">
                         No campos personalizados agregados.
                       </p>
                     )}
@@ -448,20 +475,16 @@ export default function TestForm({ projectId, testId }: Props) {
 
               <div className="space-y-2">
                 <Label>Descripción y evidencias</Label>
-                <div className="print:hidden">
+                <div>
                   <TiptapEditor
                     content={descriptionHtml}
                     onChange={setDescriptionHtml}
                     placeholder="Describe the test steps, expected results, and paste any evidence..."
                   />
                 </div>
-                <div
-                  className="hidden print:block prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: descriptionHtml }}
-                />
               </div>
 
-              <div className="flex justify-end gap-2 print:hidden">
+              <div className="flex justify-end gap-2">
                 <Button
                   type="submit"
                   disabled={isSubmitting || !environment || !name}
@@ -472,6 +495,16 @@ export default function TestForm({ projectId, testId }: Props) {
             </form>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Hidden print template */}
+      <div className="hidden">
+        <div ref={printRef}>
+          <TestPrintTemplate
+            test={printTestRecord}
+            projectName={project.name}
+          />
+        </div>
       </div>
     </div>
   );

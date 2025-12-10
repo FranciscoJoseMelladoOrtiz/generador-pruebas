@@ -12,6 +12,7 @@ import {
   ListOrdered,
   Quote,
   ImageIcon,
+  SquareCode,
 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import CodeBlock from "@tiptap/extension-code-block";
 
 type EditorProps = {
   content?: string;
@@ -45,6 +47,11 @@ export default function TiptapEditor({
         placeholder,
       }),
       Image,
+      CodeBlock.configure({
+        HTMLAttributes: {
+          class: "bg-muted rounded-md p-4 font-mono text-sm",
+        },
+      }),
     ],
     content,
     editable,
@@ -138,6 +145,14 @@ export default function TiptapEditor({
           aria-label="Toggle code"
         >
           <Code className="h-4 w-4" />
+        </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive("codeBlock")}
+          onPressedChange={() => editor.chain().focus().toggleCodeBlock().run()}
+          aria-label="Toggle code block"
+        >
+          <SquareCode className="h-4 w-4" />
         </Toggle>
         <div className="w-px h-6 bg-border mx-1 self-center" />
         <Toggle

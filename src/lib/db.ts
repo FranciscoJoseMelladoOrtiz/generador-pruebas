@@ -8,7 +8,8 @@ export type TestRecord = {
   description: string;
   createdAt: string;
   functional: string;
-  relatedTask: string;
+  relatedTask?: string; // Deprecated, kept for backward compatibility
+  relatedTasks?: string[];
   layer: string;
   date: string;
 };
