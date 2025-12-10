@@ -15,14 +15,15 @@ export const TestPrintTemplate = ({
       <div className="border-b pb-4 mb-6">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-xl font-bold mb-2">{test.name}</h1>
             <p className="text-muted-foreground">
-              {projectName ? `Project: ${projectName}` : ""}
+              {projectName ? `Proyecto: ${projectName}` : ""}
             </p>
-          </div>
-          <div className="text-right text-sm text-muted-foreground">
-            <p>Fecha creación: {format(new Date(test.createdAt), "PPP")}</p>
-            <p>Entorno: {test.environment}</p>
+            <h1 className="text-lg max-w-[40rem] font-bold mb-2">
+              {test.name}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Fecha creación: {format(new Date(test.createdAt), "dd/MM/yyyy")}
+            </p>
           </div>
         </div>
       </div>
@@ -33,6 +34,12 @@ export const TestPrintTemplate = ({
             Capa
           </h3>
           <p>{test.layer || "-"}</p>
+        </div>
+        <div>
+          <h3 className="font-semibold text-sm uppercase text-muted-foreground mb-1">
+            Entorno
+          </h3>
+          <p>{test.environment || "-"}</p>
         </div>
         <div>
           <h3 className="font-semibold text-sm uppercase text-muted-foreground mb-1">
