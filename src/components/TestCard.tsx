@@ -160,7 +160,7 @@ export default function TestCard({ test }: { test: TestRecord }) {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                className="bg-destructive/20 text-destructive hover:bg-destructive/40"
               >
                 Eliminar
               </AlertDialogAction>

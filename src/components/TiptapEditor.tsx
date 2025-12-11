@@ -54,7 +54,7 @@ export default function TiptapEditor({
       }),
       CodeBlock.configure({
         HTMLAttributes: {
-          class: "bg-muted rounded-md p-4 font-mono text-sm",
+          class: "bg-muted rounded-md p-4 font-mono text-sm text-primary",
         },
       }),
     ],
