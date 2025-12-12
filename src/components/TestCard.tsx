@@ -38,7 +38,9 @@ export default function TestCard({ test }: { test: TestRecord }) {
   const printRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: `${test.name}-Report`,
+    documentTitle: `${test.name} - ${
+      test?.relatedTasks?.[0] ? test.relatedTasks[0].split("/").pop() : ""
+    }`,
   });
 
   const handleDelete = async (e: React.MouseEvent) => {

@@ -99,7 +99,9 @@ export default function TestForm({ projectId, testId }: Props) {
   const printRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: name || "Test Record",
+    documentTitle: relatedTasks?.[0]
+      ? `${name} - ${relatedTasks[0].split("/").pop()}`
+      : name || "Test Record",
   });
 
   useEffect(() => {
