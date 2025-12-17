@@ -5,13 +5,16 @@ import { useLiveQuery } from "dexie-react-hooks";
 interface TestPrintTemplateProps {
   test: TestRecord;
   projectName?: string;
+  logo?: string;
 }
 
 export const TestPrintTemplate = ({
   test,
   projectName,
+  logo,
 }: TestPrintTemplateProps) => {
   const settings = useLiveQuery(() => db.settings.get("global"));
+  const displayLogo = logo || settings?.logo;
 
   return (
     <div className="p-8 max-w-2xl mx-auto space-y-6 print:block hidden relative">
@@ -28,9 +31,9 @@ export const TestPrintTemplate = ({
               Fecha creación: {format(new Date(test.createdAt), "dd/MM/yyyy")}
             </p>
           </div>
-          {settings?.logo && (
+          {displayLogo && (
             <img
-              src={settings.logo}
+              src={displayLogo}
               alt="Logo"
               className="h-16 absolute w-auto top-0 right-0 object-contain"
             />
@@ -56,6 +59,12 @@ export const TestPrintTemplate = ({
             Funcional
           </h3>
           <p>{test.functional || "-"}</p>
+        </div>
+        <div>
+          <h3 className="font-semibold text-sm uppercase text-muted-foreground mb-1">
+            Tipo de tarea
+          </h3>
+          <p>{test.taskType || "-"}</p>
         </div>
         <div>
           <h3 className="font-semibold text-sm uppercase text-muted-foreground mb-1">

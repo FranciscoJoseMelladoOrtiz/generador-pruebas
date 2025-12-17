@@ -17,10 +17,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Download, Loader2 } from "lucide-react";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { createRoot } from "react-dom/client";
+import { TestPrintTemplate } from "@/components/TestPrintTemplate";
 
 export default function ProjectDetail({ id }: { id: string }) {
   const project = useLiveQuery(() => db.projects.get(id));
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Loading state
   // If project is undefined, it might be loading or not found.
@@ -110,6 +117,88 @@ export default function ProjectDetail({ id }: { id: string }) {
     }
   };
 
+  const handleBulkDownload = async () => {
+    if (!project?.tests || project.tests.length === 0) return;
+    setIsGenerating(true);
+
+    try {
+      const settings = await db.settings.get("global");
+      const logo = settings?.logo;
+      const zip = new JSZip();
+
+      // Create a temporary container for rendering
+      const container = document.createElement("div");
+      container.style.position = "absolute";
+      container.style.top = "-9999px";
+      container.style.left = "-9999px";
+      container.style.width = "210mm"; // A4 width usually approx 210mm
+      container.style.background = "white"; // Ensure white background
+      document.body.appendChild(container);
+
+      for (const test of project.tests) {
+        // Create a wrapper for this specific test
+        const testWrapper = document.createElement("div");
+        container.appendChild(testWrapper);
+
+        await new Promise<void>((resolve) => {
+          const root = createRoot(testWrapper);
+          root.render(
+            <TestPrintTemplate
+              test={test}
+              projectName={project.name}
+              logo={logo}
+            />
+          );
+
+          // Wait for render and potential image loads
+          setTimeout(() => {
+            resolve();
+          }, 500);
+        });
+
+        try {
+          const canvas = await html2canvas(testWrapper, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: "#ffffff",
+          });
+
+          const imgData = canvas.toDataURL("image/png");
+
+          // A4 dimensions in mm
+          const pdf = new jsPDF("p", "mm", "a4");
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+          pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+          // Sanitize filename
+          const filename = `${test.name.replace(/[^a-z0-9]/gi, "_")}.pdf`;
+          zip.file(filename, pdf.output("blob"));
+        } catch (err) {
+          console.error(`Error generating PDF for test ${test.name}:`, err);
+        }
+
+        // Clean up the wrapper content for next iteration (though we append new wrapper)
+        // Actually, better to remove the wrapper to keep DOM light
+        testWrapper.remove();
+      }
+
+      document.body.removeChild(container);
+
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(
+        content,
+        `${project.name.replace(/[^a-z0-9]/gi, "_")}-pruebas.zip`
+      );
+    } catch (error) {
+      console.error("Error in bulk download:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="container mx-auto py-10 px-4">
       <div className="mb-6">
@@ -138,9 +227,24 @@ export default function ProjectDetail({ id }: { id: string }) {
         <TabsContent value="tests" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Lista de pruebas</h2>
-            <Button asChild className="bg-primary hover:bg-primary/80">
-              <Link href={`/projects/${id}/new-test`}>+ Nueva prueba</Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleBulkDownload}
+                disabled={isGenerating || !project.tests?.length}
+                title="Descargar en bloque"
+              >
+                {isGenerating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+              </Button>
+              <Button asChild className="bg-primary hover:bg-primary/80">
+                <Link href={`/projects/${id}/new-test`}>+ Nueva prueba</Link>
+              </Button>
+            </div>
           </div>
 
           <div className="grid gap-4">
@@ -301,6 +405,19 @@ export default function ProjectDetail({ id }: { id: string }) {
           </Card>
         </TabsContent>
       </Tabs>
+      {isGenerating && (
+        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center backdrop-blur-sm">
+          <div className="bg-background border p-8 rounded-xl shadow-2xl flex flex-col items-center gap-4 min-w-[300px]">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <div className="text-center">
+              <h3 className="font-bold text-lg">Generando PDFS...</h3>
+              <p className="text-sm text-muted-foreground">
+                Por favor espere, esto puede tardar unos segundos.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

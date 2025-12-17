@@ -103,9 +103,16 @@ export default function TestCard({ test }: { test: TestRecord }) {
           <CardHeader>
             <CardTitle className="flex justify-between items-center text-lg pr-10">
               <span className="truncate">{test.name || "Untitled Test"}</span>
-              <span className="text-xs font-normal px-2 py-1 rounded bg-secondary text-secondary-foreground">
-                {test.environment}
-              </span>
+              <div className="flex gap-2">
+                {test.taskType && (
+                  <span className="text-xs font-normal px-2 py-1 rounded bg-primary/10 text-primary">
+                    {test.taskType}
+                  </span>
+                )}
+                <span className="text-xs font-normal px-2 py-1 rounded bg-secondary text-secondary-foreground">
+                  {test.environment}
+                </span>
+              </div>
             </CardTitle>
             <CardDescription>
               {new Date(test.createdAt).toLocaleString()}

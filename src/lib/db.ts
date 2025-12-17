@@ -12,6 +12,7 @@ export type TestRecord = {
   relatedTasks?: string[];
   layer: string;
   date: string;
+  taskType?: string;
 };
 
 export type Project = {

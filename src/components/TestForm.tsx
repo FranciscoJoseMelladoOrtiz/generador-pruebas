@@ -45,6 +45,8 @@ export default function TestForm({ projectId, testId }: Props) {
   const [layer, setLayer] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [descriptionHtml, setDescriptionHtml] = useState("");
+  const [taskType, setTaskType] = useState("Defecto");
+  const [customTaskType, setCustomTaskType] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Data Management
@@ -78,6 +80,7 @@ export default function TestForm({ projectId, testId }: Props) {
       relatedTask: relatedTasks[0] || "", // maintain backward compat
       layer: layer,
       date: date,
+      taskType: taskType === "Otros" ? customTaskType : taskType,
       createdAt: test?.createdAt || new Date().toISOString(),
     };
   }, [
@@ -92,6 +95,8 @@ export default function TestForm({ projectId, testId }: Props) {
     relatedTasks,
     layer,
     date,
+    taskType,
+    customTaskType,
     test,
   ]);
 
@@ -122,7 +127,18 @@ export default function TestForm({ projectId, testId }: Props) {
           );
           setLayer(t.layer || "");
           setDate(t.date || new Date().toISOString().split("T")[0]);
+          setLayer(t.layer || "");
+          setDate(t.date || new Date().toISOString().split("T")[0]);
           setDescriptionHtml(t.description);
+
+          const tType = t.taskType || "Defecto";
+          if (["Defecto", "Evolutivo", "Caso de uso"].includes(tType)) {
+            setTaskType(tType);
+            setCustomTaskType("");
+          } else {
+            setTaskType("Otros");
+            setCustomTaskType(tType);
+          }
 
           // Reconstruct data state
           const envData = p.data[t.environment] || {};
@@ -287,7 +303,29 @@ export default function TestForm({ projectId, testId }: Props) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="space-y-2">
+                  <Label>Tipo de tarea:</Label>
+                  <Select value={taskType} onValueChange={setTaskType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Defecto">Defecto</SelectItem>
+                      <SelectItem value="Evolutivo">Evolutivo</SelectItem>
+                      <SelectItem value="Caso de uso">Caso de uso</SelectItem>
+                      <SelectItem value="Otros">Otros</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {taskType === "Otros" && (
+                    <Input
+                      placeholder="Especificar tipo..."
+                      value={customTaskType}
+                      onChange={(e) => setCustomTaskType(e.target.value)}
+                      className="mt-2"
+                    />
+                  )}
+                </div>
                 <div className="space-y-2">
                   <Label>Entorno:</Label>
                   <Select
