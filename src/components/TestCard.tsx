@@ -8,9 +8,10 @@ import {
 import { TestRecord, db } from "@/lib/db";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Copy, Trash2, Printer } from "lucide-react";
+import { Copy, Trash2, Printer, Check, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { v4 as uuidv4 } from "uuid";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -110,8 +111,16 @@ export default function TestCard({ test }: { test: TestRecord }) {
               {new Date(test.createdAt).toLocaleString()}
             </CardDescription>
           </CardHeader>
-          <CardContent className="py-2">
-            {/* Minimal content if needed */}
+          <CardContent className="mb-10 space-y-1">
+            {/* Display related tasks/URLs */}
+            {(test.relatedTasks && test.relatedTasks.length > 0
+              ? test.relatedTasks
+              : test.relatedTask
+              ? [test.relatedTask]
+              : []
+            ).map((task, index) => (
+              <CopyableItem key={index} text={task} />
+            ))}
           </CardContent>
         </Card>
       </Link>
@@ -176,6 +185,40 @@ export default function TestCard({ test }: { test: TestRecord }) {
         <div ref={printRef}>
           <TestPrintTemplate test={test} projectName={project?.name} />
         </div>
+      </div>
+    </div>
+  );
+}
+
+function CopyableItem({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div
+      className="flex items-center justify-between text-xs text-muted-foreground bg-muted/50 p-1.5 rounded group/item cursor-pointer hover:bg-muted/70 transition-colors"
+      onClick={handleCopy}
+      title="Copiar URL"
+    >
+      <div className="flex items-center overflow-hidden mr-2">
+        <ExternalLink className="h-3 w-3 mr-1.5 flex-shrink-0 opacity-70" />
+        <span className="truncate" title={text}>
+          {text}
+        </span>
+      </div>
+      <div className="h-6 w-6 flex-shrink-0 flex items-center justify-center">
+        {copied ? (
+          <Check className="h-3 w-3 text-green-500" />
+        ) : (
+          <Copy className="h-3 w-3 opacity-70" />
+        )}
       </div>
     </div>
   );
