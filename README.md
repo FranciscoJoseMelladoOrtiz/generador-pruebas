@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Generador de Pruebas
 
-## Getting Started
+## Objetivo del Proyecto
 
-First, run the development server:
+Aplicación web diseñada para centralizar y agilizar la documentación y gestión de evidencias de pruebas de software. Permite a los equipos de QA y desarrollo organizar pruebas por proyectos, configurar datos específicos por entorno (DEV, QA, UAT), y generar reportes estandarizados en PDF automáticamente.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Instalación
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Este es un proyecto [Next.js](https://nextjs.org).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Prerrequisitos**: Node.js instalado.
+2. **Instalar dependencias**:
+   ```bash
+   npm install
+   # o
+   yarn install
+   # o
+   pnpm install
+   ```
+3. **Ejecutar servidor de desarrollo**:
+   ```bash
+   npm run dev
+   ```
+4. **Acceder**: Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Cómo usar
 
-## Learn More
+### Crear una prueba
 
-To learn more about Next.js, take a look at the following resources:
+El flujo de trabajo recomendado es el siguiente:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Configuración del Proyecto**:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   - Entra en un proyecto.
+   - Ve a la pestaña **"Entornos"** y define los entornos de ejecución (ej: `Local`, `Dev`, `Preproducción`).
+   - Ve a la pestaña **"Configuración de datos"**. Aquí defines las variables constantes para cada entorno (ej: `ID_Usuario_Test`, `URL_Base`).
 
-## Deploy on Vercel
+2. **Crear la Prueba**:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   - En la pestaña **"Lista de pruebas"**, pulsa en **"+ Nueva prueba"**.
+   - **Nombre**: Título descriptivo de la prueba.
+   - **Entorno**: Al seleccionarlo, se cargarán automáticamente los datos configurados en el paso anterior.
+   - **Datos**: Selecciona mediante checks qué datos del entorno quieres incluir en el reporte de esta prueba. También puedes añadir **Campos personalizados** "al vuelo" para datos únicos de esa ejecución.
+   - **Detalles**: Rellena fecha, capa (Front/Back), usuario funcional y tipo de tarea.
+   - **Descripción y Evidencias**: Usa el editor de texto para describir los pasos. Puedes pegar imágenes directamente desde el portapapeles como evidencia.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. **Generar Reporte**:
+   - Guarda la prueba.
+   - En la lista de pruebas, puedes entrar a editarla o usar el botón **"Descargar en bloque"** en el detalle del proyecto para bajar un ZIP con los PDFs de todas las pruebas.
+
+### Importar / Exportar Datos
+
+La aplicación guarda los datos en el navegador (IndexedDB). Para compartir datos entre compañeros o hacer copias de seguridad:
+
+- **Exportar**:
+
+  - Haz clic en **"Exportar DB"** en la cabecera.
+  - Se descargará un archivo `.json` con todos los proyectos, pruebas y tu logo personalizado.
+
+- **Importar**:
+  - Haz clic en **"Importar DB"** y selecciona un archivo `.json`.
+  - Si hay datos existentes, aparecerá un modal de conflicto con dos opciones:
+    1. **Sobreescribir**: Borra tu base de datos local y la reemplaza totalmente con el archivo importado.
+    2. **Fusionar (Merge)**: Añade los proyectos del archivo a tu lista. Si hay configuraciones globales (como el logo), prioriza mantener tu configuración local actual.
+
+## Siguientes Pasos
+
+- [ ] fix: al generar PDF se genera overflow-x en el código (por ejemplo con un CURL).
+- [ ] fix: cambiar nombre documento generado por "tarea-nombreprueba-fecha" en vez de "nombreprueba-tarea".
