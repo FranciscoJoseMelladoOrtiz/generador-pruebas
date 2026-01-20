@@ -1,5 +1,5 @@
 
-name: Deploy Next.js to GitHub Pages
+name: Deploy Next.js with PNPM to GitHub Pages
 
 on:
   push:
@@ -20,22 +20,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
 
-      - name: Install dependencies
-        run: npm install
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
-      - name: Build Next.js (static export)
+      - name: Install dependencies (pnpm install)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Next (static export)
         run: |
-          npm run build
-          npm run export
+          pnpm build
+          pnpm export
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -48,7 +53,5 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     needs: build
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
