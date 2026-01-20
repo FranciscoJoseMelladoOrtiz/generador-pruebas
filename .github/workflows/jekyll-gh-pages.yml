@@ -34,18 +34,16 @@ jobs:
           version: 9
           run_install: false
 
-      - name: Install dependencies (pnpm install)
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build Next (static export)
-        run: |
-          pnpm build
-          pnpm export
+      - name: Build Next.js (static export)
+        run: pnpm build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./out
+          path: ./out   # Next output export always generates /out
 
   deploy:
     environment:
