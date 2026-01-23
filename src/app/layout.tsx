@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Analytics } from "@vercel/analytics/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
       >
+      <Analytics>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -38,6 +40,7 @@ export default function RootLayout({
           <Header />
           {children}
         </ThemeProvider>
+        </Analytics>
       </body>
     </html>
   );
