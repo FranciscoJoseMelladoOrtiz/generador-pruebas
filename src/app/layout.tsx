@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
       >
-      <Analytics>
+        <Analytics/>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -39,8 +39,7 @@ export default function RootLayout({
         >
           <Header />
           {children}
-        </ThemeProvider>
-        </Analytics>
+        </ThemeProvider>     
       </body>
     </html>
   );
