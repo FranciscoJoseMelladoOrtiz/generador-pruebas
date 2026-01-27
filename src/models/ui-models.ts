@@ -1,0 +1,1 @@
+export type ChipVariant = 'primary' | 'secondary' | 'danger' | 'warning' | 'success';
