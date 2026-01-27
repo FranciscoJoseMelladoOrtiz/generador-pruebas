@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
       ...(config.resolve.alias || {}),
       "@components": path.resolve(__dirname, "src/components"),
       "@models": path.resolve(__dirname, "src/models"),
+      "@utils": path.resolve(__dirname, "src/utils"),
     };
     return config;
   },
