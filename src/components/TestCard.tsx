@@ -27,6 +27,8 @@ import { useReactToPrint } from "react-to-print";
 import { useRef } from "react";
 import { TestPrintTemplate } from "./TestPrintTemplate";
 import { useLiveQuery } from "dexie-react-hooks";
+import { TestState } from "./TestState";
+import { Chip } from "./Chip";
 
 export default function TestCard({ test }: { test: TestRecord }) {
   const params = useParams();
@@ -101,17 +103,14 @@ export default function TestCard({ test }: { test: TestRecord }) {
       <Link href={`/projects/${projectId}/test/${test.id}`} className="block">
         <Card className="bg-card hover:border-primary/50 transition-all cursor-pointer">
           <CardHeader>
-            <CardTitle className="flex justify-between items-center text-lg pr-10">
+            <CardTitle className="flex w-full gap-4 justify-between items-center text-lg pr-10">
               <span className="truncate">{test.name || "Untitled Test"}</span>
               <div className="flex gap-2">
                 {test.taskType && (
-                  <span className="text-xs font-normal px-2 py-1 rounded bg-primary/10 text-primary">
-                    {test.taskType}
-                  </span>
+                  <Chip variant='secondary'>{test.taskType}</Chip>
                 )}
-                <span className="text-xs font-normal px-2 py-1 rounded bg-secondary text-secondary-foreground">
-                  {test.environment}
-                </span>
+                <Chip variant='secondary'>{test.environment}</Chip>
+                <TestState state={test.state}/>
               </div>
             </CardTitle>
             <CardDescription>
