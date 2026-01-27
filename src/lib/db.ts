@@ -13,6 +13,7 @@ export type TestRecord = {
   layer: string;
   date: string;
   taskType?: string;
+  state: 'passed' | 'failed' | 'unknown';
 };
 
 export type Project = {
@@ -40,6 +41,25 @@ const db = new Dexie("TestGeneratorDB") as Dexie & {
 db.version(1).stores({
   projects: "id, name, createdAt", // primary key "id"
   settings: "id", // Store global settings, id='global'
+});
+
+// Versión 2: Añadir atributo 'state' a los tests y migrar datos existentes
+db.version(2).stores({
+  projects: "id, name, createdAt",
+  settings: "id"
+}).upgrade(async (trans) => {
+  const projects = await trans.table('projects').toArray();
+  for (const project of projects) {
+    if (Array.isArray(project.tests)) {
+      project.tests = project.tests.map((test: any) => {
+        if (typeof test.state === 'undefined') {
+          return { ...test, state: 'unknown' };
+        }
+        return test;
+      });
+      await trans.table('projects').put(project);
+    }
+  }
 });
 
 export { db };

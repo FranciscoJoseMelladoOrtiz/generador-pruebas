@@ -26,6 +26,7 @@ import { useReactToPrint } from "react-to-print";
 import { Printer, Plus, Trash2 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { TestPrintTemplate } from "@/components/TestPrintTemplate";
+import { TestState } from "@/models/ui-models";
 
 type Props = {
   projectId: string;
@@ -40,6 +41,7 @@ export default function TestForm({ projectId, testId }: Props) {
 
   const [name, setName] = useState("");
   const [environment, setEnvironment] = useState("");
+  const [testState, setTestState] = useState<TestState>("unknown");
   const [functional, setFunctional] = useState("");
   const [relatedTasks, setRelatedTasks] = useState<string[]>([]);
   const [layer, setLayer] = useState("");
@@ -82,6 +84,7 @@ export default function TestForm({ projectId, testId }: Props) {
       date: date,
       taskType: taskType === "Otros" ? customTaskType : taskType,
       createdAt: test?.createdAt || new Date().toISOString(),
+      state: testState,
     };
   }, [
     testId,
@@ -98,6 +101,7 @@ export default function TestForm({ projectId, testId }: Props) {
     taskType,
     customTaskType,
     test,
+    testState,
   ]);
 
   // Ref for printing
@@ -125,6 +129,7 @@ export default function TestForm({ projectId, testId }: Props) {
           setRelatedTasks(
             t.relatedTasks || (t.relatedTask ? [t.relatedTask] : [])
           );
+          setTestState(t.state || "unknown");
           setLayer(t.layer || "");
           setDate(t.date || new Date().toISOString().split("T")[0]);
           setLayer(t.layer || "");
@@ -374,6 +379,31 @@ export default function TestForm({ projectId, testId }: Props) {
                     value={functional}
                     onChange={(e) => setFunctional(e.target.value)}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="functional">Estado:</Label>
+                  <Select
+                    onValueChange={v => setTestState(v as TestState || "unknown")}
+                    value={testState}
+                    defaultValue='unknown'
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona entorno" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem key='passed' value='passed'>
+                        Passed
+                      </SelectItem>
+                      <SelectItem key='failed' value='failed'>
+                        Failed
+                      </SelectItem>
+                      <SelectItem key='unknown' value='unknown'>
+                        Ignore
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
