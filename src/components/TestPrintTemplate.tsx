@@ -82,7 +82,26 @@ export const TestPrintTemplate = ({
           </h3>
           <p>{test.date || "-"}</p>
         </div>
+        {test.state !== 'unknown' && (
+          <div>
+            <h3 className="font-semibold text-sm uppercase text-muted-foreground mb-1">
+              Estado del test
+            </h3>
+            <p className={test.state === 'passed' ? 'text-green-600 font-bold' : test.state === 'failed' ? 'text-red-600 font-bold' : ''}>
+              {test.state === 'passed' ? 'Aprobado' : 'Fallido'}
+            </p>
+          </div>
+        )}
       </div>
+      
+      {test.state === 'failed' && (
+        <div className="mb-6">
+        <h3 className="font-bold text-lg mb-3 border-b pb-1">
+          Razón del fallo
+        </h3>
+          <p>{test.failureReason || "Desconocida"}</p>
+        </div>
+      )}
 
       {Object.keys(test.data).length > 0 && (
         <div className="mb-6">

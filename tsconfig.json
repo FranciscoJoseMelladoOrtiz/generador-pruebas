@@ -23,7 +23,9 @@
       "@/*": ["./src/*"],
       "@components/*": ["./src/components/*"],
       "@models/*": ["./src/models/*"],
-      "@utils/*": ["./src/utils/*"]
+      "@utils/*": ["./src/utils/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@lib/*": ["./src/lib/*"]
     }
   },
   "include": [
