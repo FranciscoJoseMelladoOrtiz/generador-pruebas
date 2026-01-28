@@ -14,6 +14,7 @@ export type TestRecord = {
   date: string;
   taskType?: string;
   state: 'passed' | 'failed' | 'unknown';
+  failureReason: string;
 };
 
 export type Project = {
@@ -54,6 +55,25 @@ db.version(2).stores({
       project.tests = project.tests.map((test: any) => {
         if (typeof test.state === 'undefined') {
           return { ...test, state: 'unknown' };
+        }
+        return test;
+      });
+      await trans.table('projects').put(project);
+    }
+  }
+});
+
+// Versión 3: Añadir atributo 'failureReason' a los tests y migrar datos existentes
+db.version(3).stores({
+  projects: "id, name, createdAt",
+  settings: "id"
+}).upgrade(async (trans) => {
+  const projects = await trans.table('projects').toArray();
+  for (const project of projects) {
+    if (Array.isArray(project.tests)) {
+      project.tests = project.tests.map((test: any) => {
+        if (typeof test.failureReason === 'undefined') {
+          return { ...test, failureReason: "" };
         }
         return test;
       });

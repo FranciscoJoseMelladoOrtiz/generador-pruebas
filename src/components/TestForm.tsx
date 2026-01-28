@@ -27,6 +27,7 @@ import { Printer, Plus, Trash2 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { TestPrintTemplate } from "@/components/TestPrintTemplate";
 import { TestState } from "@/models/ui-models";
+import { useTestState } from "@/hooks/testState.hooks";
 
 type Props = {
   projectId: string;
@@ -41,7 +42,7 @@ export default function TestForm({ projectId, testId }: Props) {
 
   const [name, setName] = useState("");
   const [environment, setEnvironment] = useState("");
-  const [testState, setTestState] = useState<TestState>("unknown");
+  const { status: testStatus, failureReason, setStatus, setFailureReason } = useTestState();
   const [functional, setFunctional] = useState("");
   const [relatedTasks, setRelatedTasks] = useState<string[]>([]);
   const [layer, setLayer] = useState("");
@@ -84,7 +85,8 @@ export default function TestForm({ projectId, testId }: Props) {
       date: date,
       taskType: taskType === "Otros" ? customTaskType : taskType,
       createdAt: test?.createdAt || new Date().toISOString(),
-      state: testState,
+      state: testStatus,
+      failureReason: failureReason,
     };
   }, [
     testId,
@@ -101,7 +103,8 @@ export default function TestForm({ projectId, testId }: Props) {
     taskType,
     customTaskType,
     test,
-    testState,
+    testStatus,
+    failureReason,
   ]);
 
   // Ref for printing
@@ -129,7 +132,8 @@ export default function TestForm({ projectId, testId }: Props) {
           setRelatedTasks(
             t.relatedTasks || (t.relatedTask ? [t.relatedTask] : [])
           );
-          setTestState(t.state || "unknown");
+          setStatus(t.state || "unknown");
+          setFailureReason(t.failureReason || "");
           setLayer(t.layer || "");
           setDate(t.date || new Date().toISOString().split("T")[0]);
           setLayer(t.layer || "");
@@ -384,8 +388,8 @@ export default function TestForm({ projectId, testId }: Props) {
                 <div className="space-y-2">
                   <Label htmlFor="functional">Estado:</Label>
                   <Select
-                    onValueChange={v => setTestState(v as TestState || "unknown")}
-                    value={testState}
+                    onValueChange={v => setStatus(v as TestState || "unknown")}
+                    value={testStatus}
                     defaultValue='unknown'
                     required
                   >
@@ -406,6 +410,19 @@ export default function TestForm({ projectId, testId }: Props) {
                   </Select>
                 </div>
               </div>
+
+              {testStatus === 'failed' && (
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>Razon del error</Label>
+                  </div>
+                  <Input
+                    placeholder="Tarea relacionada"
+                    value={failureReason}
+                    onChange={(e) => setFailureReason(e.target.value)}
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
