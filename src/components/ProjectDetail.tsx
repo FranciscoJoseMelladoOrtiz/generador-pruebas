@@ -327,7 +327,7 @@ export default function ProjectDetail({ id }: { id: string }) {
           {/* Filters & Sort Controls */}
           <Card className="bg-muted/10 border-none shadow-none">
             <CardContent className="p-4 space-y-4">
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4">
                 {/* Filter Type */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">
