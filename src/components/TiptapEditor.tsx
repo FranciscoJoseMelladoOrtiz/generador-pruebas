@@ -9,6 +9,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Toggle } from "@/components/ui/toggle";
+import { ParameterTag, type ParamItem } from "@/extensions/parameterTag";
+import { useParameterTags } from "@/hooks/useParameterTags";
 import CodeBlock from "@tiptap/extension-code-block";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -24,13 +26,19 @@ import {
   Quote,
   SquareCode,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef, useCallback } from "react";
 
 type EditorProps = {
   content?: string;
   onChange: (html: string) => void;
   placeholder?: string;
   editable?: boolean;
+  initialParams?: ParamItem[];
+  /**
+   * Si se proporciona, el editor usará estos parámetros en lugar de gestionar su propio estado.
+   * Útil cuando quieres controlar los parámetros desde el componente padre.
+   */
+  params?: ParamItem[];
 };
 
 export default function TiptapEditor({
@@ -38,26 +46,60 @@ export default function TiptapEditor({
   onChange,
   placeholder = "Start typing...",
   editable = true,
+  initialParams = [
+    { key: 'cliente', value: 'Pepe' },
+    { key: 'ciudad', value: 'Córdoba' },
+  ],
+  params: externalParams,
 }: EditorProps) {
+  
+  const { params: internalParams } = useParameterTags(initialParams);
+  
+  // Usar params externos si se proporcionan, sino usar los internos
+  const params = externalParams ?? internalParams;
+  
+  // Usar ref para mantener params actualizados sin recrear el editor
+  const paramsRef = useRef(params);
+  
+  // Actualizar ref cuando params cambien
+  useEffect(() => {
+    paramsRef.current = params;
+  }, [params]);
+  
+  // Función estable para obtener params (no se recrea)
+  const getParams = useCallback(() => {
+    // eslint-disable-next-line react-compiler/react-compiler
+    return paramsRef.current;
+  }, []);
+  
+  // Memoizar extensiones solo una vez, getParams usará el ref
+  // eslint-disable-next-line react-compiler/react-compiler
+  const extensions = useMemo(() => [
+    StarterKit.configure({
+      codeBlock: false,
+    }),
+    
+    ParameterTag.configure({
+      getParams,
+    }),
+
+    Placeholder.configure({
+      placeholder,
+    }),
+    Image.configure({
+      inline: true,
+      allowBase64: true,
+    }),
+    CodeBlock.configure({
+      HTMLAttributes: {
+        class: "bg-muted rounded-md p-4 font-mono text-sm text-primary",
+      },
+    }),
+  ], [getParams, placeholder]); // getParams es estable, no causará recreaciones
+
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        codeBlock: false,
-      }),
-      Placeholder.configure({
-        placeholder,
-      }),
-      Image.configure({
-        inline: true,
-        allowBase64: true,
-      }),
-      CodeBlock.configure({
-        HTMLAttributes: {
-          class: "bg-muted rounded-md p-4 font-mono text-sm text-primary",
-        },
-      }),
-    ],
+    extensions,
     content,
     editable,
     editorProps: {
@@ -65,7 +107,8 @@ export default function TiptapEditor({
         class:
           "prose prose-sm sm:prose-base dark:prose-invert focus:outline-none min-h-[200px] w-full max-w-none p-4",
       },
-      handlePaste: (view, event, slice) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      handlePaste: (view, event, _slice) => {
         const items = Array.from(event.clipboardData?.items || []);
         const item = items.find((item) => item.type.indexOf("image") === 0);
 

@@ -28,6 +28,7 @@ import { v4 as uuidv4 } from "uuid";
 import { TestPrintTemplate } from "@/components/TestPrintTemplate";
 import { TestState } from "@/models/ui-models";
 import { useTestState } from "@/hooks/testState.hooks";
+import { useTestDataParams } from "@/hooks/useParameterTags";
 
 type Props = {
   projectId: string;
@@ -60,6 +61,9 @@ export default function TestForm({ projectId, testId }: Props) {
   const [customData, setCustomData] = useState<
     { key: string; value: string }[]
   >([]);
+
+  // Parámetros para TipTap suggestion (datos + campos personalizados)
+  const editorParams = useTestDataParams(availableData, selectedKeys, customData);
 
   // Derived state for printing
   const printTestRecord = useMemo<TestRecord>(() => {
@@ -566,7 +570,8 @@ export default function TestForm({ projectId, testId }: Props) {
                   <TiptapEditor
                     content={descriptionHtml}
                     onChange={setDescriptionHtml}
-                    placeholder="Describe the test steps, expected results, and paste any evidence..."
+                    params={editorParams}
+                    placeholder="Describe la prueba, resultados esperados y pega evidencias..."
                   />
                 </div>
               </div>
